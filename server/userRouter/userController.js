@@ -47,4 +47,20 @@ const editUser = (req, res) => {
   res.status(200).send({ message: "Here is update data", data });
 };
 
-module.exports = { getAllUsers, getOneUser, addUser, editUser };
+const updateUser = (req, res) => {
+  const id = +req.params.id;
+
+  const userIdx = data.findIndex((user) => user.id === id);
+  console.log(id);
+
+  if (userIdx >= 0) {
+    data[userIdx] = { ...data[userIdx], ...req.body };
+  } else {
+    res.status(400).send("Not Valid");
+  }
+  res
+    .status(200)
+    .send({ message: "User Update successfully", data: data[userIdx] });
+};
+
+module.exports = { getAllUsers, getOneUser, addUser, editUser, updateUser };
