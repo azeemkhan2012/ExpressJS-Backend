@@ -21,8 +21,6 @@ const getOneUser = async (req, res) => {
 
 const addUser = async (req, res) => {
   const { first_name, last_name, email, age } = req.body;
-  // const data = await pool.query("SELECT * FROM testData");
-  // const id = data.length + 1;
 
   if (req.body.first_name) {
     await pool.query(
@@ -35,36 +33,54 @@ const addUser = async (req, res) => {
   }
 };
 
-const editUser = (req, res) => {
-  const id = +req.params.id;
-
-  const recordIdx = data.findIndex((user) => user.id === id);
-
-  const updateRecord = { id, ...req.body };
-
-  if (recordIdx >= 0) {
-    data[recordIdx] = updateRecord;
+const updateUser = async (req, res) => {
+  const id = parseInt(req.params.id);
+  const { first_name, last_name } = req.body;
+  if (first_name) {
+    try {
+      const [result] = await pool.query(
+        `UPDATE testData
+     SET first_name = ?, last_name = ?
+     WHERE id = ?`,
+        [first_name, last_name, id]
+      );
+      if (result.affectedRows > 0) {
+        res.status(200).send("User Added Successfully");
+      } else {
+        res.status(404).send("User Not found");
+      }
+    } catch (err) {
+      console.log("Error occured while adding user", err);
+      res.status(500).send("Error occured");
+    }
   } else {
-    res.status(405).send("record is not valid");
+    res.status(400).send("Feilds are missing");
   }
-
-  res.status(200).send({ message: "Here is update data", data });
 };
 
-const updateUser = (req, res) => {
+const editUser = async (req, res) => {
   const id = +req.params.id;
 
-  const userIdx = data.findIndex((user) => user.id === id);
-  console.log(id);
+  const { first_name, last_name, email, age } = req.body;
 
-  if (userIdx >= 0) {
-    data[userIdx] = { ...data[userIdx], ...req.body };
-  } else {
-    res.status(400).send("Not Valid");
+  if (first_name && last_name && email && age) {
+    try {
+      const [result] = await pool.query(
+        `UPDATE testData SET first_name = ?, last_name = ?, email = ?, age = ?
+        WHERE id = ?
+        `,
+        [first_name, last_name, email, age, id]
+      );
+      if (result.affectedRows > 0) {
+        res.status(200).send("User updated successfully");
+      } else {
+        res.status(404).send("User not found");
+      }
+    } catch (err) {
+      console.log("Error occured while updating user", err);
+      res.status(500).send("Internal issue occured");
+    }
   }
-  res
-    .status(200)
-    .send({ message: "User Update successfully", data: data[userIdx] });
 };
 
 module.exports = { getAllUsers, getOneUser, addUser, editUser, updateUser };
